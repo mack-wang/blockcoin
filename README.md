@@ -13,14 +13,16 @@ wallet 钱包： 查看自己云币余额，支付云币给其他用户，挖矿
 
 
 #### 3.操作教程
-管理员在www.yurencloud.top域名下开启了愚人云端|区块链云币服务
-服务器端
-app端口地址：http://www.yurencloud.top:3031  
-home端口地址：http://www.yurencloud.top:8081  
-wallet端口地址：http://www.yurencloud.top:8080  
-对外开放连接的websocket端口为：http://www.yurencloud.top:6001  
+管理员在www.yurencloud.top域名下开启了愚人云端|区块链云币服务  
 
-现在假设有用户A，用户B想使用云币
+服务器端  
+app端口地址：http://www.yurencloud.top:3001  
+home端口地址：http://www.yurencloud.top:3002  
+wallet端口地址：http://www.yurencloud.top:3003  
+对外开放连接的websocket端口为：ws://www.yurencloud.top:6001   
+
+使用步骤：
+
 1.克隆项目到本地
 ~~~
 git clone https://github.com/mack-wang/blockcoin.git
@@ -38,13 +40,26 @@ npm start
 ~~~
 3.用户要监听服务端对外开放连接的websocket端口，以同步区块链、待登记交易事务
 ~~~
-curl -H "Content-type:application/json" --data '{"peer" : "ws://www.yurencloud.top:6001"}' http://localhost:3002/addPeer
+curl -H "Content-type:application/json" --data '{"peer" : "ws://www.yurencloud.top:6001"}' http://localhost:3001/addPeer
 ~~~
-3.用户可通过服务器提供的home来查看所有区块链，所以不用开启本地的home项目
+4.用户可通过服务器提供的home来查看所有区块链，所以不用开启本地的home项目
 ~~~
-http://www.yurencloud.top:8080
+http://www.yurencloud.top:3002
 ~~~
-4.用户访问自己的钱包、转账、挖矿
+5.用户访问自己的钱包、转账、挖矿
 ~~~
-http://localhost:8080
+http://localhost:8082
+~~~
+
+#### 4.提示
+- 为了方便测试，生成区块的间隔时间为10秒，而比特币生成区块的时间间隔为10分钟。
+- 每生成10个区块，调整一次难度值，以维持区块生成时间平均在10秒
+- 由于挖矿占用的是服务器的cpu，所以请不要快速挖矿，导致服务器或者你自己本地的服务器崩溃
+- 区块链会同步保存到app目录下的blockchain文件中
+
+
+
+#### 5.参考项目
+~~~
+https://lhartikk.github.io/
 ~~~
