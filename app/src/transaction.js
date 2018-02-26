@@ -1,5 +1,6 @@
 const CryptoJS = require('crypto-js');
 const ecdsa = require('elliptic');
+const fs = require('fs');
 const _ = require('lodash');
 
 const ec = new ecdsa.ec('secp256k1');
@@ -209,6 +210,11 @@ const updateUnspentTxOuts = (aTransactions, aUnspentTxOuts) => {
     const resultingUnspentTxOuts = aUnspentTxOuts
         .filter((uTxO => !findUnspentTxOut(uTxO.txOutId, uTxO.txOutIndex, consumedTxOuts)))
         .concat(newUnspentTxOuts);
+    const stat = fs.statSync('./unspentTxOuts');
+    // 如果余额数据大于512M则不再允许添加
+    if (stat.size < 1024 * 1024 * 512) {
+        fs.writeFileSync('./unspentTxOuts', JSON.stringify(resultingUnspentTxOuts));
+    }
     return resultingUnspentTxOuts;
 };
 

@@ -1,8 +1,15 @@
 const _ = require('lodash');
+const fs = require('fs');
 const transaction = require('./transaction');
 
 // 待登记交易事务队列数组
 let transactionPool = [];
+
+if (fs.existsSync('./transactionPool')) {
+    transactionPool = JSON.parse(fs.readFileSync('./transactionPool'));
+}else{
+    fs.writeFileSync('./transactionPool', JSON.stringify(transactionPool));
+}
 
 // 获取待登记交易事务队列数组
 const getTransactionPool = () => {
@@ -19,6 +26,12 @@ const addToTransactionPool = (tx, unspentTxOuts) => {
     }
     console.log('adding to txPool: %s', JSON.stringify(tx));
     transactionPool.push(tx);
+    const stat = fs.statSync('./transactionPool');
+    // 如果待登记交易事务数据大于512M则不再允许添加
+    if (stat.size < 1024 * 1024 * 512) {
+        // 实时更新待登记交易事务
+        fs.writeFileSync('./transactionPool', JSON.stringify(transactionPool));
+    }
 };
 
 // 判断交易事务数据是否合法

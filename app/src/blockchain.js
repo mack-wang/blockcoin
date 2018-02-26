@@ -20,32 +20,34 @@ class Block {
     }
 }
 
+// 初始交易事务结构（即初始区块又称创世区块的data数据）
+const genesisTransaction = {
+    txIns: [{signature: '', txOutId: '', txOutIndex: 0}],
+    txOuts: [{
+        address: '04bfcab8722991ae774db48f934ca79cfb7dd991229153b9f732ba5334aafcd8e7266e47076996b55a14bf9913ee3145ce0cfc1372ada8ada74bd287450313534a',
+        amount: 50,
+    }],
+    id: 'e655f6a5f26dc9b4cac6e46f52336428287759cf81ef5ff10854f69d68f43fa3',
+};
+
+// 生成初始区块
+const genesisBlock = new Block(0, '91a73664bc84c0baa1fc75ea6e4aa6d1d20c5df664c724e3159aefc2e1186627', '', 1465154705, [genesisTransaction], 0, 0);
+
 // 判断当前是否存在区块链文件，如果存在就直接使用
 let blockchain = [];
 let unspentTxOuts = [];
 if (fs.existsSync('./blockchain')) {
     blockchain = JSON.parse(fs.readFileSync('./blockchain'));
-
+    unspentTxOuts = JSON.parse(fs.readFileSync('./unspentTxOuts'))
 } else {
-    // 初始交易事务结构（即初始区块又称创世区块的data数据）
-    const genesisTransaction = {
-        txIns: [{signature: '', txOutId: '', txOutIndex: 0}],
-        txOuts: [{
-            address: '04bfcab8722991ae774db48f934ca79cfb7dd991229153b9f732ba5334aafcd8e7266e47076996b55a14bf9913ee3145ce0cfc1372ada8ada74bd287450313534a',
-            amount: 50,
-        }],
-        id: 'e655f6a5f26dc9b4cac6e46f52336428287759cf81ef5ff10854f69d68f43fa3',
-    };
 
-// 生成初始区块
-    const genesisBlock = new Block(0, '91a73664bc84c0baa1fc75ea6e4aa6d1d20c5df664c724e3159aefc2e1186627', '', 1465154705, [genesisTransaction], 0, 0);
-
-// 初始化区块链
+    // 初始化区块链
     blockchain = [genesisBlock];
 
-// the unspent txOut of genesis block is set to unspentTxOuts on startup
-// 将初始交易事务发送到待登记交易事务队列中
+    // the unspent txOut of genesis block is set to unspentTxOuts on startup
+    // 将初始交易事务发送到待登记交易事务队列中
     unspentTxOuts = transaction.processTransactions(blockchain[0].data, [], 0);
+    fs.writeFileSync('./blockchain', JSON.stringify(blockchain));
 }
 
 
@@ -272,16 +274,27 @@ const isValidChain = (blockchainToValidate) => {
 
 // 把区块添加到区块链上
 const addBlockToChain = (newBlock) => {
+    let end = false;
+
+
+    if(end) return;
     // 检查新区块是不是根据最新区块创建的
     if (isValidNewBlock(newBlock, getLatestBlock())) {
-
         const retVal = transaction.processTransactions(newBlock.data, getUnspentTxOuts(), newBlock.index);
         if (retVal === null) {
             console.log('block is not valid in terms of transactions');
             return false;
         } else {
+            const stat = fs.statSync('./blockchain');
+            // 如果区块链大于512M则不再允许添加区块链 1024 * 1024 * 512
+            if(stat.size < 1024 * 1024 * 512){
+                blockchain.push(newBlock);
+            }
 
-            blockchain.push(newBlock);
+            // 实时更新区块链
+            fs.writeFileSync('./blockchain', JSON.stringify(blockchain));
+            // 并清空待登记交易事务本地文件
+            fs.writeFileSync('./transactionPool', JSON.stringify([]));
             setUnspentTxOuts(retVal);
             transactionPool.updateTransactionPool(unspentTxOuts);
             return true;
