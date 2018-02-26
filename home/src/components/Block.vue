@@ -1,37 +1,37 @@
 <template>
   <div v-if="block.hash">
 
-    <h3>Block #{{ block.index }}</h3>
+    <h5>区块 Block #{{ block.index }}</h5>
     <table>
       <tbody>
       <tr>
-        <td>Hash</td>
+        <td>当前哈希值 Hash</td>
         <td>{{ block.hash }}</td>
       </tr>
       <tr>
-        <td>Previous hash</td>
+        <td>前一个块的哈稀值 Previous hash</td>
         <td>{{ block.previousHash}}</td>
       </tr>
       <tr>
-        <td>Timestamp</td>
+        <td>时间戳 Timestamp</td>
         <td>{{ block.timestamp}}</td>
       </tr>
       <tr>
-        <td>Difficulty</td>
+        <td>难度值 Difficulty</td>
         <td>{{ block.difficulty}}</td>
       </tr>
       <tr>
-        <td>Nonce</td>
+        <td>随机次数 Nonce</td>
         <td>{{ block.nonce}}</td>
       </tr>
       <tr>
-        <td>Number of transactions</td>
+        <td>交易事务数量 Number of transactions</td>
         <td>{{ block.data.length}}</td>
       </tr>
 
       </tbody>
     </table>
-    <h3>Transactions</h3>
+    <h5>交易事务 Transactions</h5>
     <div class="transaction" v-for="tx in block.data">
       <div class="row">
         <router-link :to="{ name: 'Transaction', params: { id: tx.id }}"> <span >{{ tx.id }}</span></router-link>

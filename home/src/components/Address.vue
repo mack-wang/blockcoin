@@ -1,10 +1,10 @@
 <template>
   <div>
-    <h3>Address</h3>
-    <h4 class="break-word">{{$route.params.address }}</h4>
-    <h4>Total amount: {{  totalAmount(addressData.unspentTxOuts) }} </h4>
+    <h5>钱包地址 Address</h5>
+    <h5 class="break-word">{{$route.params.address }}</h5>
+    <h5>云币余额 Total amount: {{  totalAmount(addressData.unspentTxOuts) }} </h5>
 
-    <h4>Unspent transaction outputs</h4>
+    <h5>余额来源 Unspent transaction outputs</h5>
     <div class="txOut" v-for="uTxo in addressData.unspentTxOuts">
       <div class="row">txOutId:
         <router-link :to="{ name: 'Transaction', params :{ id: uTxo.txOutId}}"><span>{{ uTxo.txOutId }}</span>

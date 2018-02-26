@@ -4,9 +4,9 @@
       <thead>
       <tr>
         <th>#</th>
-        <th>hash</th>
-        <th>Transactions</th>
-        <th>Timestamp</th>
+        <th>哈希值 hash</th>
+        <th>交易事务 Transactions</th>
+        <th>时间戳 Timestamp</th>
       </tr>
       </thead>
 

@@ -58,7 +58,7 @@ const findUnspentTxOuts = (ownerAddress, unspentTxOuts) => {
     return _.filter(unspentTxOuts, uTxO => uTxO.address === ownerAddress);
 };
 
-// 查找自己的币，验证余币是否充足，足够支付amount给对方
+// 查找自己的云币，验证余币是否充足，足够支付amount给对方
 const findTxOutsForAmount = (amount, myUnspentTxOuts) => {
     let currentAmount = 0;
     const includedUnspentTxOuts = [];
@@ -66,7 +66,7 @@ const findTxOutsForAmount = (amount, myUnspentTxOuts) => {
     for (const myUnspentTxOut of myUnspentTxOuts) {
         // 把准备要支付出去的块都放到includedUnspentTxOunts数组中
         includedUnspentTxOuts.push(myUnspentTxOut);
-        // 累积已经读取的币的数量
+        // 累积已经读取的云币的数量
         currentAmount += myUnspentTxOut.amount;
         // 如果已经足够支持，停止遍历，返回支付出去的块数组，和余额
         if (currentAmount >= amount) {
@@ -74,13 +74,13 @@ const findTxOutsForAmount = (amount, myUnspentTxOuts) => {
             return {includedUnspentTxOuts, leftOverAmount};
         }
     }
-    // 不能创建交易，交易要amount个币，你只有myUnspentTxOunts个币
+    // 不能创建交易事务，交易要amount个币，你只有myUnspentTxOunts个币
     const eMsg = `${'Cannot create transaction from the available unspent transaction outputs.' +
     ' Required amount:'}${amount}. Available unspentTxOuts:${JSON.stringify(myUnspentTxOuts)}`;
     throw Error(eMsg);
 };
 
-// 创建输出币，根据对方地址和我的地址
+// 创建支付数据，根据对方地址和当前用户地址
 const createTxOuts = (receiverAddress, myAddress, amount, leftOverAmount) => {
     // 根据对方地址和交易数量，创建交易事务
     const txOut1 = new transaction.TxOut(receiverAddress, amount);
@@ -113,12 +113,12 @@ const filterTxPoolTxs = (unspentTxOuts, transactionPool) => {
     return _.without(unspentTxOuts, ...removable);
 };
 
-// 创建交易：收款地址，数量，私钥，余额，交易池
+// 创建交易事务：收款地址，数量，私钥，余额，待登记交易事务
 const createTransaction = (receiverAddress, amount, privateKey, unspentTxOuts, txPool) => {
     console.log('txPool: %s', JSON.stringify(txPool));
     // 获取16进制公钥，即获取我的地址
     const myAddress = transaction.getPublicKey(privateKey);
-    // 我未
+
     const myUnspentTxOutsA = unspentTxOuts.filter(uTxO => uTxO.address === myAddress);
     const myUnspentTxOuts = filterTxPoolTxs(myUnspentTxOutsA, txPool);
     // filter from unspentOutputs such inputs that are referenced in pool

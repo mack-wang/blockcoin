@@ -1,27 +1,27 @@
 <template>
   <div>
     <div class="row break-word">
-      Your public address: <h5 class="break-word">{{ address }}</h5>
+      你的钱包公开地址 Your public address: <h5 class="break-word">{{ address }}</h5>
     </div>
     <div class="row">
-      Your balance: <h5>{{ balance }}</h5>
+      你的余额 Your balance: <h5>{{ balance }}</h5>
     </div>
     <br>
-    <h5>Send coins</h5>
+    <h5>云币付款 Send coins</h5>
     <form>
       <div class="row">
         <div class="ten columns">
-          <label for="receiverAddress">Receiver address</label>
+          <label for="receiverAddress">收款钱包地址 Receiver address</label>
           <input v-model="receiverAddress" class="u-full-width" type="text" placeholder="04f72a4541275aeb4344a8b04..." id="receiverAddress">
         </div>
         <div class="two columns">
-          <label for="amount">Amount</label>
+          <label for="amount">支付数量 Amount</label>
           <input v-model="receiverAmount" class="u-full-width" type="number" placeholder="0" id="amount">
         </div>
       </div>
-      <button v-on:click="sendTransaction" class="button-primary">Send</button>
+      <button v-on:click="sendTransaction" class="button-primary">确认支付 Send</button>
     </form>
-    <h5>Transaction pool</h5>
+    <h5>待登记交易事务队列 Transaction pool</h5>
     <div class="transaction" v-for="tx in transactionPool">
       <div class="row">
         <span >TxId: {{ tx.id }}</span>
@@ -29,7 +29,7 @@
       <div class="row">
         <div class="five columns">
           <div v-for="txIn in tx.txIns">
-            <div v-if="txIn.signature === ''">coinbase</div>
+            <div v-if="txIn.signature === ''">云币初始币 coinbase</div>
             <div class="break-word" v-else>{{ txIn.txOutId }} {{ txIn.txOutIndex }}</div>
           </div>
         </div>
@@ -39,16 +39,16 @@
         <div class="six columns">
           <div class="row" v-for="txOut in tx.txOuts">
             <div class="break-word">
-              <span>address: {{ txOut.address }}</span>
-              amount: {{ txOut.amount}} </div>
+              <span>钱包地址 address: {{ txOut.address }}</span>
+              交易数量 amount: {{ txOut.amount}} </div>
           </div>
         </div>
       </div>
     </div>
-    <div v-if="transactionPool.length === 0"><span>No transactions in transaction pool</span></div>
+    <div v-if="transactionPool.length === 0"><span>没有待登记交易事务 No transactions in transaction pool</span></div>
     <br>
-    <h5>Mine block</h5>
-    <button v-on:click="mineBlock" class="button-primary">Click to mine block</button>
+    <h5>我的区块 Mine block</h5>
+    <button v-on:click="mineBlock" class="button-primary">点击开始挖矿 Click to mine block</button>
     <div>
 
     </div>

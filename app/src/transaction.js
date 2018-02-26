@@ -28,7 +28,7 @@ class TxOut {
 class Transaction {
 }
 
-// 生成交易id，根据交易的输入和交易的输出的内容进行hash得到，所以id即包含交易的全部信息
+// 生成交易事务id，根据交易事务的收入数据和交易事务的支出数据的内容进行hash得到，所以id即包含交易事务的全部信息hash得到
 const getTransactionId = (transaction) => {
     const txInContent = transaction.txIns
         .map(txIn => txIn.txOutId + txIn.txOutIndex)
@@ -39,7 +39,7 @@ const getTransactionId = (transaction) => {
     return CryptoJS.SHA256(txInContent + txOutContent).toString();
 };
 
-// 验证交易是否有效
+// 验证交易事务是否有效
 const validateTransaction = (transaction, aUnspentTxOuts) => {
     if (!isValidTransactionStructure(transaction)) {
         return false;
@@ -68,9 +68,9 @@ const validateTransaction = (transaction, aUnspentTxOuts) => {
     return true;
 };
 
-// 验证交易
+// 验证交易事务
 const validateBlockTransactions = (aTransactions, aUnspentTxOuts, blockIndex) => {
-    // 交易的第一笔即为coinbase
+    // 交易事务的第一笔即为coinbase
     const coinbaseTx = aTransactions[0];
     if (!validateCoinbaseTx(coinbaseTx, blockIndex)) {
         console.log(`invalid coinbase transaction: ${JSON.stringify(coinbaseTx)}`);
@@ -111,13 +111,13 @@ const validateCoinbaseTx = (transaction, blockIndex) => {
         return false;
     }
 
-    // 根据交易生成交易id 判断交易是否真实
+    // 根据交易事务生成交易事务id 判断交易事务是否真实
     if (getTransactionId(transaction) !== transaction.id) {
         console.log(`invalid coinbase tx id: ${transaction.id}`);
         return false;
     }
 
-    // 交易长度必须等于1，因为第一笔交易是coinbase
+    // 交易事务长度必须等于1，因为第一笔交易事务是coinbase
     if (transaction.txIns.length !== 1) {
         console.log('one txIn must be specified in the coinbase transaction');
         return;
@@ -135,7 +135,7 @@ const validateCoinbaseTx = (transaction, blockIndex) => {
         return false;
     }
 
-    // 交易的数量要等于COINBASE_AMOUNT
+    // 交易事务的数量要等于COINBASE_AMOUNT
     if (transaction.txOuts[0].amount !== COINBASE_AMOUNT) {
         console.log('invalid coinbase amount in coinbase transaction');
         return false;
@@ -164,7 +164,7 @@ const findUnspentTxOut = (transactionId, index, aUnspentTxOuts) => {
     return aUnspentTxOuts.find(uTxO => uTxO.txOutId === transactionId && uTxO.txOutIndex === index);
 };
 
-// 根据我的地址和下一个区块的索引，创建交易
+// 根据用户地址和下一个区块的索引，创建交易事务
 const getCoinbaseTransaction = (address, blockIndex) => {
     const t = new Transaction();
     const txIn = new TxIn();
@@ -212,7 +212,7 @@ const updateUnspentTxOuts = (aTransactions, aUnspentTxOuts) => {
     return resultingUnspentTxOuts;
 };
 
-// 验证并添加交易
+// 验证并添加交易事务
 const processTransactions = (aTransactions, aUnspentTxOuts, blockIndex) => {
     if (!validateBlockTransactions(aTransactions, aUnspentTxOuts, blockIndex)) {
         console.log('invalid block transactions');
@@ -267,7 +267,7 @@ const isValidTxOutStructure = (txOut) => {
     }
 };
 
-// 验证交易记录的数据结构是否正确
+// 验证交易事务的数据结构是否正确
 const isValidTransactionStructure = (transaction) => {
     if (typeof transaction.id !== 'string') {
         console.log('transactionId missing');

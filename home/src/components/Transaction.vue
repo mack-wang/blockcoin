@@ -1,16 +1,16 @@
 <template>
   <div>
-    <h3>Transaction</h3>
-    <h4>{{ transaction.id }}</h4>
-    <h4>Total amount: {{ totalValue(transaction) }}</h4>
-    <h5>TxIns</h5>
+    <h5>交易事务 Transaction</h5>
+    <h5>{{ transaction.id }}</h5>
+    <h5>交易金额 Total amount: {{ totalValue(transaction) }}</h5>
+    <h5>收入来源 TxIns</h5>
     <div class="txIn break-word" v-for="txIn in transaction.txIns">
       <div class="row bold" v-if="txIn.signature ===''">Coinbase transaction</div>
       <div class="row">TxOutId: <router-link :to="{ name: 'Transaction', params: {id: txIn.txOutId }}"> <span>{{ txIn.txOutId }}</span></router-link></div>
       <div class="row">TxOutIndex:  {{ txIn.txOutIndex }}</div>
       <div class="row">Signature: {{ txIn.signature }}</div>
     </div>
-    <h5>TxOuts</h5>
+    <h5>支出数据 TxOuts</h5>
     <div class="txIn break-word" v-for="txOut in transaction.txOuts">
       <div class="row">Address: <router-link :to="{ name: 'Address', params: {address: txOut.address}}"> <span>{{ txOut.address }}</span></router-link> </div>
       <div class="row">Amount: {{ txOut.amount}}</div>

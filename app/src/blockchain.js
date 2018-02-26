@@ -1,4 +1,5 @@
 const CryptoJS = require('crypto-js');
+const fs = require('fs');
 const _ = require('lodash');
 const p2p = require('./p2p');
 const transaction = require('./transaction');
@@ -6,6 +7,7 @@ const transactionPool = require('./transactionPool');
 const util = require('./util');
 const wallet = require('./wallet');
 
+// 区块结构
 class Block {
     constructor(index, hash, previousHash, timestamp, data, difficulty, nonce) {
         this.index = index;
@@ -18,25 +20,34 @@ class Block {
     }
 }
 
+// 判断当前是否存在区块链文件，如果存在就直接使用
+let blockchain = [];
+let unspentTxOuts = [];
+if (fs.existsSync('./blockchain')) {
+    blockchain = JSON.parse(fs.readFileSync('./blockchain'));
 
-const genesisTransaction = {
-    txIns: [{signature: '', txOutId: '', txOutIndex: 0}],
-    txOuts: [{
-        address: '04bfcab8722991ae774db48f934ca79cfb7dd991229153b9f732ba5334aafcd8e7266e47076996b55a14bf9913ee3145ce0cfc1372ada8ada74bd287450313534a',
-        amount: 50,
-    }],
-    id: 'e655f6a5f26dc9b4cac6e46f52336428287759cf81ef5ff10854f69d68f43fa3',
-};
+} else {
+    // 初始交易事务结构（即初始区块又称创世区块的data数据）
+    const genesisTransaction = {
+        txIns: [{signature: '', txOutId: '', txOutIndex: 0}],
+        txOuts: [{
+            address: '04bfcab8722991ae774db48f934ca79cfb7dd991229153b9f732ba5334aafcd8e7266e47076996b55a14bf9913ee3145ce0cfc1372ada8ada74bd287450313534a',
+            amount: 50,
+        }],
+        id: 'e655f6a5f26dc9b4cac6e46f52336428287759cf81ef5ff10854f69d68f43fa3',
+    };
 
 // 生成初始区块
-const genesisBlock = new Block(0, '91a73664bc84c0baa1fc75ea6e4aa6d1d20c5df664c724e3159aefc2e1186627', '', 1465154705, [genesisTransaction], 0, 0);
+    const genesisBlock = new Block(0, '91a73664bc84c0baa1fc75ea6e4aa6d1d20c5df664c724e3159aefc2e1186627', '', 1465154705, [genesisTransaction], 0, 0);
 
 // 初始化区块链
-let blockchain = [genesisBlock];
+    blockchain = [genesisBlock];
 
 // the unspent txOut of genesis block is set to unspentTxOuts on startup
-// 初始比特币
-let unspentTxOuts = transaction.processTransactions(blockchain[0].data, [], 0);
+// 将初始交易事务发送到待登记交易事务队列中
+    unspentTxOuts = transaction.processTransactions(blockchain[0].data, [], 0);
+}
+
 
 const getBlockchain = () => blockchain;
 
@@ -54,7 +65,7 @@ const getLatestBlock = () => blockchain[blockchain.length - 1];
 // 区块生成的间隔时间10秒
 const BLOCK_GENERATION_INTERVAL = 10;
 
-// 区块难度调整间隔10个块
+// 每间隔10个块区块，调整生成区块的难度值
 const DIFFICULTY_ADJUSTMENT_INTERVAL = 10;
 
 // 获取难度值
@@ -123,7 +134,7 @@ const generateNextBlock = () => {
     return generateRawNextBlock(blockData);
 };
 
-// 根据交易生成区块， 收款地址，收款数量
+// 根据交易事务生成区块， 收款地址，收款数量
 const generatenextBlockWithTransaction = (receiverAddress, amount) => {
     if (!transaction.isValidAddress(receiverAddress)) {
         throw Error('invalid address');
@@ -138,8 +149,8 @@ const generatenextBlockWithTransaction = (receiverAddress, amount) => {
     return generateRawNextBlock(blockData);
 };
 
-// 挖矿，实际就是逐一递增nonce值，计算hash,
-// 这一段代码是无限循环执行的，耗费计算量的代码就是这一段，直到找到符合条件nonce值，便生成新的区块
+// 挖矿，实际就是逐一递增nonce值，计算hash,寻找符合条件的hash
+// 这一段代码是无限循环执行的，耗费计算量的代码就是这一段，直到找到符合条件nonce值，便拥有登记权，有权把待登记的交易事务写入到区块链中，并通知其他矿工也登记
 const findBlock = (index, previousHash, timestamp, data, difficulty) => {
     let nonce = 0;
     while (true) {
@@ -154,13 +165,13 @@ const getAccountBalance = () => {
     return wallet.getBalance(wallet.getPublicFromWallet(), getUnspentTxOuts());
 };
 
-// 发送交易到交易池，排队
+// 发送交易事务到待登记交易事务队列，排队
 const sendTransaction = (address, amount) => {
-    // 创建交易记录
+    // 创建交易事务
     const tx = wallet.createTransaction(address, amount, wallet.getPrivateFromWallet(), getUnspentTxOuts(), transactionPool.getTransactionPool());
-    // 添加到交易池中
+    // 添加到待交易事务队列中
     transactionPool.addToTransactionPool(tx, getUnspentTxOuts());// 新的交易记录，和之前还未处理完的交易记录，二者
-    // 广播交易池
+    // 广播待交易事务队列，让所有监听本站点的用户都同步待交易事务队列
     p2p.broadCastTransactionPool();
     return tx;
 };
@@ -175,7 +186,7 @@ const isValidBlockStructure = (block) => {
         && typeof block.data === 'object';
 };
 
-// 创建最新区块是不是和区块链顶端区块相邻， 并且区块合法
+// 验证最新区块是不是和区块链顶端区块相邻， 并且区块合法
 const isValidNewBlock = (newBlock, previousBlock) => {
     if (!isValidBlockStructure(newBlock)) {
         console.log('invalid block structure: %s', JSON.stringify(newBlock));
@@ -263,12 +274,13 @@ const isValidChain = (blockchainToValidate) => {
 const addBlockToChain = (newBlock) => {
     // 检查新区块是不是根据最新区块创建的
     if (isValidNewBlock(newBlock, getLatestBlock())) {
-        //
+
         const retVal = transaction.processTransactions(newBlock.data, getUnspentTxOuts(), newBlock.index);
         if (retVal === null) {
             console.log('block is not valid in terms of transactions');
             return false;
         } else {
+
             blockchain.push(newBlock);
             setUnspentTxOuts(retVal);
             transactionPool.updateTransactionPool(unspentTxOuts);
