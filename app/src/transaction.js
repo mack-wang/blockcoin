@@ -210,11 +210,7 @@ const updateUnspentTxOuts = (aTransactions, aUnspentTxOuts) => {
     const resultingUnspentTxOuts = aUnspentTxOuts
         .filter((uTxO => !findUnspentTxOut(uTxO.txOutId, uTxO.txOutIndex, consumedTxOuts)))
         .concat(newUnspentTxOuts);
-    const stat = fs.statSync('./unspentTxOuts');
-    // 如果余额数据大于512M则不再允许添加
-    if (stat.size < 1024 * 1024 * 512) {
-        fs.writeFileSync('./unspentTxOuts', JSON.stringify(resultingUnspentTxOuts));
-    }
+    fs.writeFileSync('./unspentTxOuts', JSON.stringify(resultingUnspentTxOuts));
     return resultingUnspentTxOuts;
 };
 
